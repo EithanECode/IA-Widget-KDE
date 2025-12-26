@@ -49,3 +49,11 @@ function insertMessage(text, isUser) {
         tx.executeSql('INSERT INTO messages VALUES(?, ?)', [text, isUserStr]);
     });
 }
+
+// Borra todo el historial
+function clearMessages() {
+    if (!db) return;
+    db.transaction(function (tx) {
+        tx.executeSql('DELETE FROM messages');
+    });
+}
