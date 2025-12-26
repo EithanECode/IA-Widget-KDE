@@ -1,4 +1,5 @@
 import "Database.js" as DB
+import Qt.labs.settings 1.0
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
@@ -94,6 +95,16 @@ ApplicationWindow {
         id: faFont
 
         source: "resource/icons/fa-solid-900.ttf"
+    }
+
+    // Configuración Persistente
+    Settings {
+        id: appSettings
+
+        property string apiKey: ""
+        property int modelIndex: 0
+        property int langIndex: 0
+        property real fontSize: 14
     }
 
     // Modelo de datos para el chat
@@ -334,26 +345,73 @@ ApplicationWindow {
         id: settingsView
 
         Rectangle {
-            color: "#ff8833" // Fondo naranja (mismo que background principal)
+            color: "#ff8833" // Fondo naranja
 
             ColumnLayout {
-                anchors.centerIn: parent
-                spacing: 20
-                width: 300
+                id: settingsLayout
 
-                Text {
-                    text: "Configuración"
-                    font.pixelSize: 24
-                    font.bold: true
+                anchors.fill: parent
+                anchors.margins: 20
+                spacing: 15
+
+                // Cabecera con Botón Atrás
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    Button {
+                        display: AbstractButton.TextOnly
+                        onClicked: mainStack.pop()
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: parent.clicked()
+                        }
+
+                        background: Item {
+                        }
+
+                        contentItem: Text {
+                            text: "\uf060" // fa-arrow-left
+                            font.family: faFont.name
+                            font.pixelSize: 22
+                            color: "white"
+                        }
+
+                    }
+
+                    Text {
+                        text: "CONFIGURACIÓN"
+                        font.bold: true
+                        font.pixelSize: 20
+                        color: "white"
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+
+                    // Elemento invisible para equilibrar el layout (ancho del botón aprox)
+                    Item {
+                        width: 30
+                    }
+
+                }
+
+                // --- SECCIÓN IA ---
+                Label {
+                    text: "API Key:"
                     color: "white"
-                    Layout.alignment: Qt.AlignHCenter
+                    font.bold: true
                 }
 
                 TextField {
-                    placeholderText: "API Token"
+                    id: apiKeyField
+
                     Layout.fillWidth: true
-                    passwordCharacter: "*"
                     echoMode: TextInput.Password
+                    placeholderText: "sk-..."
+                    text: appSettings.apiKey
+                    // Guardar al escribir
+                    onTextEdited: appSettings.apiKey = text
 
                     background: Rectangle {
                         implicitHeight: 40
@@ -363,9 +421,67 @@ ApplicationWindow {
 
                 }
 
+                Label {
+                    text: "Modelo:"
+                    color: "white"
+                    font.bold: true
+                }
+
+                ComboBox {
+                    id: modelCombo
+
+                    Layout.fillWidth: true
+                    model: ["GPT-4o", "GPT-4o-mini", "Claude 3.5 Sonnet"]
+                    currentIndex: appSettings.modelIndex
+                    onActivated: appSettings.modelIndex = currentIndex
+                }
+
+                // --- SECCIÓN INTERFAZ ---
+                Rectangle {
+                    height: 1 // Separador
+                    Layout.fillWidth: true
+                    color: "#55ffffff"
+                }
+
+                Label {
+                    text: "Idioma de la interfaz:"
+                    color: "white"
+                    font.bold: true
+                }
+
+                ComboBox {
+                    id: languageCombo
+
+                    Layout.fillWidth: true
+                    model: ["Español", "English", "Português", "Français"]
+                    currentIndex: appSettings.langIndex
+                    onActivated: appSettings.langIndex = currentIndex
+                }
+
+                Label {
+                    text: "Tamaño de letra: " + Math.round(fontSizeSlider.value)
+                    color: "white"
+                    font.bold: true
+                }
+
+                Slider {
+                    id: fontSizeSlider
+
+                    from: 10
+                    to: 20
+                    Layout.fillWidth: true
+                    value: appSettings.fontSize
+                    onMoved: appSettings.fontSize = value
+                }
+
+                // Espaciador
+                Item {
+                    Layout.fillHeight: true
+                }
+
                 Button {
-                    text: "Cerrar"
-                    Layout.alignment: Qt.AlignHCenter
+                    text: "Guardar y Volver"
+                    Layout.fillWidth: true
                     onClicked: mainStack.pop()
 
                     MouseArea {
@@ -375,19 +491,18 @@ ApplicationWindow {
                     }
 
                     background: Rectangle {
-                        implicitWidth: 100
-                        implicitHeight: 40
-                        color: parent.pressed ? "#cc0000" : "#ff0000"
+                        implicitHeight: 45
+                        color: parent.pressed ? "#cc6622" : "white"
                         radius: 5
                     }
 
                     contentItem: Text {
                         text: parent.text
-                        color: "white"
+                        color: parent.pressed ? "white" : "#ff8833"
+                        font.bold: true
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    // Navegación: Volver
 
                 }
 
