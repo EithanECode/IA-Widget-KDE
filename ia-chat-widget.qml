@@ -1,11 +1,17 @@
+import "Database.js" as DB
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import QtQuick.LocalStorage 2.0
 
 ApplicationWindow {
     visible: true
     visibility: "Maximized"
     color: "#ff8833"
+    Component.onCompleted: {
+        DB.init();
+        DB.getMessages(chatModel);
+    }
 
     // StackView Principal
     StackView {
@@ -41,23 +47,13 @@ ApplicationWindow {
                 }
 
                 ListView {
+                    // Mocks eliminados
+
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     clip: true
 
                     model: ListModel {
-                        ListElement {
-                            title: "Chat de Ayuda"
-                        }
-
-                        ListElement {
-                            title: "Conversación #1"
-                        }
-
-                        ListElement {
-                            title: "Dudas sobre Qt"
-                        }
-
                     }
 
                     delegate: Item {
@@ -102,13 +98,9 @@ ApplicationWindow {
 
     // Modelo de datos para el chat
     ListModel {
+        // Mocks eliminados
+
         id: chatModel
-
-        ListElement {
-            text: "Hola, ¿en qué puedo ayudarte?"
-            isUser: false
-        }
-
     }
 
     // --- Componente: Vista de Chat ---
@@ -300,6 +292,9 @@ ApplicationWindow {
                     display: AbstractButton.TextOnly
                     onClicked: {
                         if (chatInput.text.trim() !== "") {
+                            // Guardar en la base de datos
+                            DB.insertMessage(chatInput.text, true);
+                            // Agregar visualmente al modelo
                             chatModel.append({
                                 "text": chatInput.text,
                                 "isUser": true
