@@ -4,6 +4,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.LocalStorage 2.0
+import "chatLogic.js" as Logic
 
 ApplicationWindow {
     visible: true
@@ -307,19 +308,25 @@ ApplicationWindow {
                     }
 
                     Button {
+                        // Pasamos el objeto DB importado para que el JS pueda guardar la respuesta
+
                         id: sendButton
 
                         display: AbstractButton.TextOnly
                         onClicked: {
                             if (chatInput.text.trim() !== "") {
-                                // Guardar en la base de datos
-                                DB.insertMessage(chatInput.text, true);
-                                // Agregar visualmente al modelo
+                                var msg = chatInput.text;
+                                var modelNames = ["gemini-1.5-flash", "gemini-1.5-pro", "gpt-4o", "gpt-4o-mini", "claude-3-5-sonnet-20240620"];
+                                var selectedModel = modelNames[appSettings.modelIndex];
+                                // Guardar mensaje del usuario en BD y UI
+                                DB.insertMessage(msg, true);
                                 chatModel.append({
-                                    "text": chatInput.text,
+                                    "text": msg,
                                     "isUser": true
                                 });
                                 chatInput.text = "";
+                                // Llamar a la lógica de IA
+                                Logic.enviarAI(msg, appSettings.apiKey, selectedModel, appSettings.systemPrompt, appSettings.temperature, chatModel, DB);
                             }
                         }
 
@@ -442,7 +449,7 @@ ApplicationWindow {
                     id: modelCombo
 
                     Layout.fillWidth: true
-                    model: ["GPT-4o", "GPT-4o-mini", "Claude 3.5 Sonnet"]
+                    model: ["Gemini 1.5 Flash", "Gemini 1.5 Pro", "GPT-4o", "GPT-4o-mini", "Claude 3.5 Sonnet"]
                     currentIndex: appSettings.modelIndex
                     onActivated: appSettings.modelIndex = currentIndex
                 }
